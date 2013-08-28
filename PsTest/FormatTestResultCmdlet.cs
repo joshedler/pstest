@@ -9,7 +9,8 @@ namespace PsTest
     [Cmdlet(VerbsCommon.Format, "TestResult")]
     public class FormatTestResultCmdlet : PSCmdlet
     {
-        private const string LineTemplate = "{0,-80}";
+        private const string TestResultLineTemplate = "{0}:{1,-78}";
+        private const string EndResultLineTemplate = "{0,-80}";
 
         /// <summary>
         /// The default color to use for successful tests.
@@ -129,7 +130,7 @@ namespace PsTest
             ColorFormatter.SetBackgroundColor(
                 testResult.Success ? SuccessColor : FailureColor
             );
-            WriteObject(string.Format(LineTemplate, testResult.TestName));
+            WriteObject(string.Format(TestResultLineTemplate, testResult.Success ? 'P' : 'F', testResult.TestName));
         }
 
         /// <summary>
@@ -155,7 +156,7 @@ namespace PsTest
                 NumberOfTestResults
             );
             WriteObject(string.Empty);
-            WriteObject(string.Format(LineTemplate, endResult));
+            WriteObject(string.Format(EndResultLineTemplate, endResult));
         }
     }
 }
