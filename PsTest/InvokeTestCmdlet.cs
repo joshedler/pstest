@@ -25,10 +25,11 @@ namespace PsTest
         /// </summary>
         internal virtual TestResult CreateTestResult(
             string testName,
-            bool success
+            bool success,
+            Exception exception = null
         )
         {
-            return new TestResult(testName, success);
+            return new TestResult(testName, success, exception);
         }
 
         /// <summary>
@@ -45,9 +46,11 @@ namespace PsTest
                 }
                 catch (Exception e)
                 {
+                    var isExpected = IsExpectedException(test.ExpectedException, e);
                     WriteObject(CreateTestResult(
                         test.Name, 
-                        IsExpectedException(test.ExpectedException, e)
+                        isExpected,
+                        !isExpected ? e : null
                     ));
                 }
             }

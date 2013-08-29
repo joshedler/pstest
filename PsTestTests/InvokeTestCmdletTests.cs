@@ -4,6 +4,7 @@ using PsTest;
 using Rhino.Mocks;
 using System;
 using System.Management.Automation;
+using Rhino.Mocks.Constraints;
 
 namespace PsTestTests
 {
@@ -91,6 +92,7 @@ namespace PsTestTests
             // Arrange.
             var test = new Test("t", ScriptBlock.Create(string.Empty));
             var testResult = new TestResult("tr", true);
+            var exception = new Exception();
 
             var runtime = MockRepository.GenerateStrictMock<ICommandRuntime>();
             runtime.Expect(r => r.WriteObject(testResult));
@@ -101,9 +103,9 @@ namespace PsTestTests
             cmdlet.CommandRuntime = runtime;
             cmdlet
                 .Expect(c => c.InvokeScriptBlock(test.TestScript))
-                .Throw(new Exception());
+                .Throw(exception);
             cmdlet
-                .Expect(c => c.CreateTestResult(test.Name, false))
+                .Expect(c => c.CreateTestResult(test.Name, false, exception))
                 .Return(testResult);
 
             // Act.

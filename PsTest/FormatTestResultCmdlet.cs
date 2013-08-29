@@ -131,6 +131,11 @@ namespace PsTest
                 testResult.Success ? SuccessColor : FailureColor
             );
             WriteObject(string.Format(TestResultLineTemplate, testResult.Success ? 'P' : 'F', testResult.TestName));
+
+            if (testResult.Exception != null)
+            {
+                WriteObject(testResult.Exception);
+            }
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MvcContrib.TestHelper;
 using PsTest;
 using Rhino.Mocks;
@@ -231,7 +232,7 @@ namespace PsTestTests
             var testResult = new TestResult(testName, true);
             const string successColor = "success color";
 
-            var expectedLine = string.Format("{0,-80}", testName);
+            var expectedLine = string.Format("P:{0,-78}", testName);
 
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
@@ -256,14 +257,14 @@ namespace PsTestTests
         }
 
         [TestMethod]
-        public void WriteTestResultCorrectBgForFailedTests()
+        public void WriteTestResultCorrectBgForFailedTestsWithNoException()
         {
             // Arrange.
             const string testName = "1";
             var testResult = new TestResult(testName, false);
             const string failureColor = "failure color";
 
-            var expectedLine = string.Format("{0,-80}", testName);
+            var expectedLine = string.Format("F:{0,-78}", testName);
 
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
@@ -271,6 +272,50 @@ namespace PsTestTests
 
             var runtime = MockRepository.GenerateMock<ICommandRuntime>();
             runtime.Expect(r => r.WriteObject(expectedLine));
+
+            var cmdlet = MockRepository
+                .GeneratePartialMock<FormatTestResultCmdlet>();
+            cmdlet.Expect(c => c.FailureColor).Return(failureColor);
+            cmdlet.ColorFormatter = colorFormatter;
+            cmdlet.CommandRuntime = runtime;
+
+            // Act.
+            cmdlet.WriteTestResult(testResult);
+
+            // Assert.
+            cmdlet.VerifyAllExpectations();
+            colorFormatter.VerifyAllExpectations();
+            runtime.VerifyAllExpectations();
+        }
+
+        [TestMethod]
+        public void WriteTestResultCorrectBgForFailedTestsWithAnException()
+        {
+            // Arrange.
+            Exception exception = null;
+
+            try
+            {
+                throw new Exception("A test exception.");
+            }
+            catch (Exception x)
+            {
+                exception = x;
+            }
+
+            const string testName = "1";
+            var testResult = new TestResult(testName, false, exception);
+            const string failureColor = "failure color";
+
+            var expectedLine = string.Format("F:{0,-78}", testName);
+
+            var colorFormatter = MockRepository
+                .GenerateMock<IColorFormatter>();
+            colorFormatter.Expect(c => c.SetBackgroundColor(failureColor));
+
+            var runtime = MockRepository.GenerateMock<ICommandRuntime>();
+            runtime.Expect(r => r.WriteObject(expectedLine));
+            runtime.Expect(r => r.WriteObject(exception));
 
             var cmdlet = MockRepository
                 .GeneratePartialMock<FormatTestResultCmdlet>();

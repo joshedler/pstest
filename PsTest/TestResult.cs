@@ -9,6 +9,7 @@ namespace PsTest
     {
         private readonly string _testName;
         private readonly bool _success;
+        private readonly Exception _unexpectedException;
 
         /// <summary>
         /// Initializes a new instance of the TestResult class with the
@@ -20,7 +21,10 @@ namespace PsTest
         /// <param name="success">
         /// True if the test was a success or false.
         /// </param>
-        public TestResult(string testName, bool success)
+        /// <param name="unexpectedException">
+        /// Any unexpected Exception that occurred during test execution.
+        /// </param>
+        public TestResult(string testName, bool success, Exception unexpectedException = null)
         {
             if (testName == null)
             {
@@ -28,6 +32,7 @@ namespace PsTest
             }
             _testName = testName;
             _success = success;
+            _unexpectedException = unexpectedException;
         }
 
         /// <summary>
@@ -39,5 +44,10 @@ namespace PsTest
         /// Get a value indicating if the test was successful or not.
         /// </summary>
         public bool Success { get { return _success; } }
+
+        /// <summary>
+        /// Get any unexpected Exception that occurred during test execution.
+        /// </summary>
+        public Exception Exception { get { return _unexpectedException; } }
     }
 }
