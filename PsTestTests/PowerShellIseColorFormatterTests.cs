@@ -40,7 +40,7 @@ namespace PsTestTests
             // Arrange.
             const string color = "color";
             var command = string.Format(
-                "$psISE.Options.OutputPaneTextBackgroundColor = '{0}'",
+                "$psISE.Options.ConsolePaneTextBackgroundColor = '{0}'",
                 color
             );
 
@@ -72,7 +72,7 @@ namespace PsTestTests
                 new PSObject(expectedColor)
             };
             const string command =
-                "[string]$psISE.Options.OutputPaneTextBackgroundColor";
+                "[string]$psISE.Options.ConsolePaneTextBackgroundColor";
 
             var pipeline = MockRepository.GenerateMock<IPipeline>();
             pipeline.Expect(p => p.Invoke()).Return(psobjects);

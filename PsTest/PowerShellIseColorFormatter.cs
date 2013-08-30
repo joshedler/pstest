@@ -40,7 +40,7 @@ namespace PsTest
         public void SetBackgroundColor(string color)
         {
             var command = string.Format(
-                "$psISE.Options.OutputPaneTextBackgroundColor = '{0}'",
+                "$psISE.Options.ConsolePaneTextBackgroundColor = '{0}'",
                 color
             );
             Runspace.CreateNestedPipeline(command, false).Invoke();
@@ -54,8 +54,8 @@ namespace PsTest
         /// </returns>
         public string GetBackgroundColor()
         {
-            var command = 
-                "[string]$psISE.Options.OutputPaneTextBackgroundColor";
+            var command =
+                "[string]$psISE.Options.ConsolePaneTextBackgroundColor";
             return (string)Runspace
                 .CreateNestedPipeline(command, false).Invoke()[0]
                 .BaseObject;
