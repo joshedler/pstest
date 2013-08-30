@@ -6,19 +6,24 @@
     public interface IColorFormatter
     {
         /// <summary>
-        /// Sets the background color to the specified color.
+        /// Sets the foreground and background color to the specified parameters.
         /// </summary>
-        /// <param name="color">
-        /// The color.
+        /// <param name="foregroundColor">
+        /// The foreground color.
         /// </param>
-        void SetBackgroundColor(string color);
+        /// <param name="backgroundColor">
+        /// The background color.
+        /// </param>
+        void SetColor(string foregroundColor, string backgroundColor);
 
         /// <summary>
-        /// Get the current background color.
+        /// Saves the current foreground and background color for a future call to ResetColor.
         /// </summary>
-        /// <returns>
-        /// The background color.
-        /// </returns>
-        string GetBackgroundColor();
+        void SaveColor();
+
+        /// <summary>
+        /// Reset the foreground and background color to their saved values.
+        /// </summary>
+        void ResetColor();
     }
 }

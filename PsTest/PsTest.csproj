@@ -44,7 +44,7 @@
     <Compile Include="IRunspace.cs" />
     <Compile Include="NewTestCmdlet.cs" />
     <Compile Include="PipelineWrapper.cs" />
-    <Compile Include="PowerShellIseColorFormatter.cs" />
+    <Compile Include="PowerShellColorFormatter.cs" />
     <Compile Include="RunspaceWrapper.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="TestResult.cs" />

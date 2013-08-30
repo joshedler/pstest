@@ -15,23 +15,29 @@ namespace PsTest
         /// <summary>
         /// The default color to use for successful tests.
         /// </summary>
-        public const string DefaultSuccessColor = "LawnGreen";
+        public const string DefaultSuccessColor = "DarkGreen";
 
         /// <summary>
         /// The default color to use for failed tests.
         /// </summary>
-        public const string DefaultFailureColor = "Salmon";
+        public const string DefaultFailureColor = "Red";
+
+        /// <summary>
+        /// The default color to use for the foreground text.
+        /// </summary>
+        public const string DefaultForegroundColor = "White";
 
         /// <summary>
         /// Initializes a new cmdlet with a default color formatter.
         /// </summary>
         public FormatTestResultCmdlet()
         {
-            ColorFormatter = new PowerShellIseColorFormatter(
+            ColorFormatter = new PowerShellColorFormatter(
                 new RunspaceWrapper(Runspace.DefaultRunspace)
             );
             SuccessColor = DefaultSuccessColor;
             FailureColor = DefaultFailureColor;
+            ForegroundColor = DefaultForegroundColor;
         }
 
         /// <summary>
@@ -57,6 +63,12 @@ namespace PsTest
         public virtual string FailureColor { get; set; }
 
         /// <summary>
+        /// Get or set the foreground color.
+        /// </summary>
+        [Parameter(Position = 3)]
+        public virtual string ForegroundColor { get; set; }
+
+        /// <summary>
         /// Get or set a value indicating if all tests results should be
         /// written to pipeline.
         /// </summary>
@@ -74,13 +86,8 @@ namespace PsTest
         /// </summary>
         protected override void BeginProcessing()
         {
-            OriginalBackGroundColor = ColorFormatter.GetBackgroundColor();
+            ColorFormatter.SaveColor();
         }
-
-        /// <summary>
-        /// Get or set the original background color of the PowerShell host.
-        /// </summary>
-        internal virtual string OriginalBackGroundColor { get; set; }
 
         /// <summary>
         /// Formats each test result.
@@ -123,11 +130,12 @@ namespace PsTest
         }
 
         /// <summary>
-        /// Sets the background color and writes the test name.
+        /// Sets the background color and writes the test result and name.
         /// </summary>
         internal virtual void WriteTestResult(TestResult testResult)
         {
-            ColorFormatter.SetBackgroundColor(
+            ColorFormatter.SetColor(
+                ForegroundColor,
                 testResult.Success ? SuccessColor : FailureColor
             );
             WriteObject(string.Format(TestResultLineTemplate, testResult.Success ? 'P' : 'F', testResult.TestName));
@@ -139,12 +147,12 @@ namespace PsTest
         }
 
         /// <summary>
-        /// Sets the background color back to the original and writes results.
+        /// Writes results and resets the background color back to the saved values.
         /// </summary>
         protected override void EndProcessing()
         {
             WriteEndResult();
-            ColorFormatter.SetBackgroundColor(OriginalBackGroundColor);
+            ColorFormatter.ResetColor();
         }
 
         /// <summary>
@@ -152,7 +160,8 @@ namespace PsTest
         /// </summary>
         internal virtual void WriteEndResult()
         {
-            ColorFormatter.SetBackgroundColor(
+            ColorFormatter.SetColor(
+                ForegroundColor,
                 Success ? SuccessColor : FailureColor
             );
             string endResult = string.Format(

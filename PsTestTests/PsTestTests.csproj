@@ -46,7 +46,7 @@
     <Compile Include="InvokeTestCmdletTests.cs" />
     <Compile Include="NewTestCmdletTests.cs" />
     <Compile Include="PipelineWrapperTests.cs" />
-    <Compile Include="PowerShellIseColorFormatterTests.cs" />
+    <Compile Include="PowerShellColorFormatterTests.cs" />
     <Compile Include="RunspaceWrapperTests.cs" />
     <Compile Include="TestResultTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

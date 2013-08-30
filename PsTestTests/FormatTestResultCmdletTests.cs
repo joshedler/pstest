@@ -139,9 +139,9 @@ namespace PsTestTests
             );
             Assert.IsInstanceOfType(
                 cmdlet.ColorFormatter,
-                typeof(PowerShellIseColorFormatter)
+                typeof(PowerShellColorFormatter)
             );
-            var formatter = (PowerShellIseColorFormatter)cmdlet.ColorFormatter;
+            var formatter = (PowerShellColorFormatter)cmdlet.ColorFormatter;
             var actualRunspace =
                 ((RunspaceWrapper)formatter.Runspace).Runspace;
             Assert.AreEqual(expectedRunspace, actualRunspace);
@@ -219,7 +219,7 @@ namespace PsTestTests
 
             // Assert.
             cmdlet.AssertWasNotCalled(
-                c => c.WriteTestResult(null),
+                c => c.WriteTestResult(tests[0]),
                 a => a.IgnoreArguments()
             );
         }
@@ -230,19 +230,21 @@ namespace PsTestTests
             // Arrange.
             const string testName = "1";
             var testResult = new TestResult(testName, true);
+            const string fgColor = "foreground";
             const string successColor = "success color";
 
             var expectedLine = string.Format("P:{0,-78}", testName);
 
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
-            colorFormatter.Expect(c => c.SetBackgroundColor(successColor));
+            colorFormatter.Expect(c => c.SetColor(fgColor, successColor));
 
             var runtime = MockRepository.GenerateMock<ICommandRuntime>();
             runtime.Expect(r => r.WriteObject(expectedLine));
 
             var cmdlet = MockRepository
                 .GeneratePartialMock<FormatTestResultCmdlet>();
+            cmdlet.Expect(c => c.ForegroundColor).Return(fgColor);
             cmdlet.Expect(c => c.SuccessColor).Return(successColor);
             cmdlet.ColorFormatter = colorFormatter;
             cmdlet.CommandRuntime = runtime;
@@ -262,19 +264,21 @@ namespace PsTestTests
             // Arrange.
             const string testName = "1";
             var testResult = new TestResult(testName, false);
+            const string fgColor = "foreground";
             const string failureColor = "failure color";
 
             var expectedLine = string.Format("F:{0,-78}", testName);
 
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
-            colorFormatter.Expect(c => c.SetBackgroundColor(failureColor));
+            colorFormatter.Expect(c => c.SetColor(fgColor, failureColor));
 
             var runtime = MockRepository.GenerateMock<ICommandRuntime>();
             runtime.Expect(r => r.WriteObject(expectedLine));
 
             var cmdlet = MockRepository
                 .GeneratePartialMock<FormatTestResultCmdlet>();
+            cmdlet.Expect(c => c.ForegroundColor).Return(fgColor);
             cmdlet.Expect(c => c.FailureColor).Return(failureColor);
             cmdlet.ColorFormatter = colorFormatter;
             cmdlet.CommandRuntime = runtime;
@@ -305,13 +309,14 @@ namespace PsTestTests
 
             const string testName = "1";
             var testResult = new TestResult(testName, false, exception);
+            const string fgColor = "foreground";
             const string failureColor = "failure color";
 
             var expectedLine = string.Format("F:{0,-78}", testName);
 
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
-            colorFormatter.Expect(c => c.SetBackgroundColor(failureColor));
+            colorFormatter.Expect(c => c.SetColor(fgColor, failureColor));
 
             var runtime = MockRepository.GenerateMock<ICommandRuntime>();
             runtime.Expect(r => r.WriteObject(expectedLine));
@@ -319,6 +324,7 @@ namespace PsTestTests
 
             var cmdlet = MockRepository
                 .GeneratePartialMock<FormatTestResultCmdlet>();
+            cmdlet.Expect(c => c.ForegroundColor).Return(fgColor);
             cmdlet.Expect(c => c.FailureColor).Return(failureColor);
             cmdlet.ColorFormatter = colorFormatter;
             cmdlet.CommandRuntime = runtime;
@@ -333,21 +339,17 @@ namespace PsTestTests
         }
 
         [TestMethod]
-        public void BeginProcessingSavesOriginalBgColor()
+        public void BeginProcessingSavesOriginalColor()
         {
             // Arrange.
-            const string expectedBgColor = "bg color";
-
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
             colorFormatter
-                .Expect(c => c.GetBackgroundColor())
-                .Return(expectedBgColor);
+                .Expect(c => c.SaveColor());
 
             var cmdlet = MockRepository
                 .GeneratePartialMock<TestableFormatTestResultCmdlet>();
             cmdlet.ColorFormatter = colorFormatter;
-            cmdlet.Expect(c => c.OriginalBackGroundColor = expectedBgColor);
 
             // Act.
             cmdlet.DoBeginProcessing();
@@ -358,27 +360,19 @@ namespace PsTestTests
         }
 
         [TestMethod]
-        public void EndProcessingWritesEndResAndRestoresOriginalBgColor()
+        public void EndProcessingWritesEndResAndRestoresSavedColor()
         {
             // Arrange.
-            const string expectedBgColor = "bg color";
-
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
             colorFormatter
-                .Expect(c => c.SetBackgroundColor(expectedBgColor));
+                .Expect(c => c.ResetColor());
 
             var cmdlet = MockRepository
                 .GeneratePartialMock<TestableFormatTestResultCmdlet>();
             cmdlet.ColorFormatter = colorFormatter;
             cmdlet
                 .Expect(c => c.WriteEndResult());
-            cmdlet
-                .Expect(c => c.OriginalBackGroundColor)
-                .Return(expectedBgColor)
-                .WhenCalled(
-                    a => cmdlet.AssertWasCalled(c => c.WriteEndResult())
-                );
 
             // Act.
             cmdlet.DoEndProcessing();
@@ -394,6 +388,7 @@ namespace PsTestTests
             // Arrange.
             const int numberOfSuccessfulTestResults = 321;
             const int numberOfTestResults = 123;
+            const string fgColor = "fgColor";
             const string failureColor = "failure color";
             var expectedText = string.Format(
                 "Passed tests: {0}/{1}.",
@@ -405,7 +400,7 @@ namespace PsTestTests
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
             colorFormatter
-                .Expect(c => c.SetBackgroundColor(failureColor));
+                .Expect(c => c.SetColor(fgColor, failureColor));
 
             var runtime = MockRepository.GenerateMock<ICommandRuntime>();
             runtime
@@ -415,7 +410,7 @@ namespace PsTestTests
                 .WhenCalled(a =>
                 {
                     colorFormatter.AssertWasCalled(
-                        c => c.SetBackgroundColor(failureColor)
+                        c => c.SetColor(fgColor, failureColor)
                     );
                     runtime.AssertWasCalled(r => r.WriteObject(""));
                 });
@@ -424,6 +419,9 @@ namespace PsTestTests
                 .GeneratePartialMock<FormatTestResultCmdlet>();
             cmdlet.ColorFormatter = colorFormatter;
             cmdlet.CommandRuntime = runtime;
+            cmdlet
+                .Expect(c => c.ForegroundColor)
+                .Return(fgColor);
             cmdlet
                 .Expect(c => c.Success)
                 .Return(false);
@@ -451,12 +449,13 @@ namespace PsTestTests
         public void WriteEndResultAllSuccessfulUsesSuccessColor()
         {
             // Arrange.
+            const string fgColor = "fgColor";
             const string successColor = "success color";
 
             var colorFormatter = MockRepository
                 .GenerateMock<IColorFormatter>();
             colorFormatter
-                .Expect(c => c.SetBackgroundColor(successColor));
+                .Expect(c => c.SetColor(fgColor, successColor));
 
             var runtime = MockRepository.GenerateStub<ICommandRuntime>();
 
@@ -466,6 +465,7 @@ namespace PsTestTests
             cmdlet.CommandRuntime = runtime;
             cmdlet.Expect(c => c.Success).Return(true);
             cmdlet.Expect(c => c.SuccessColor).Return(successColor);
+            cmdlet.Expect(c => c.ForegroundColor).Return(fgColor);
 
             // Act.
             cmdlet.WriteEndResult();
